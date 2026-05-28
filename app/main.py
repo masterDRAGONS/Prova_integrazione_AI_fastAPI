@@ -9,12 +9,12 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 
 from .ai.gemini import Gemini
-from .auth.dependencies import get_user_identifier
+from .auth.dependencies import get_user_identifier, get_authenticated_user
 from .auth.throttling import apply_rate_limit
 from .config import settings
 from .schemas import ChatRequest, ChatResponse
 from .routers import users_router
-from .database import get_db, authenticate_user
+from .database import get_db, authenticate_user, User
 
 app = FastAPI()
 
@@ -130,7 +130,11 @@ async def login(request: Request, username: str = Form(...), password: str = For
 
 
 @app.post("/logout")
-async def logout():
+async def logout(current_user: User = Depends(get_authenticated_user)):
+    """
+    Logout endpoint protetto - solo gli utenti autenticati possono fare logout.
+    Se il token è invalido, scaduto, o manca, ritorna 401 Unauthorized.
+    """
     response = RedirectResponse(url="/", status_code=303)
     response.delete_cookie(key="token")
     return response
