@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, Form, HTTPException, status
+from fastapi import FastAPI, Form, HTTPException, status, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from jose import jwt
+from sqlalchemy.orm import Session
 from starlette.requests import Request
 
 from .ai.gemini import Gemini
@@ -12,8 +13,13 @@ from .auth.dependencies import get_user_identifier
 from .auth.throttling import apply_rate_limit
 from .config import settings
 from .schemas import ChatRequest, ChatResponse
+from .routers import users_router
+from .database import get_db, authenticate_user
 
 app = FastAPI()
+
+# Include routers
+app.include_router(users_router)
 
 # Configurazione template Jinja2
 templates_dir = Path(__file__).parent / "templates"
@@ -42,11 +48,6 @@ def create_access_token(username: str, expires_delta: timedelta = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encoded_jwt
-
-
-def verify_credentials(username: str, password: str) -> bool:
-    # Dummy authentication - replace with real implementation
-    return username == "admin" and password == "secret123"
 
 
 # --- Web Endpoints (HTML) ---
@@ -98,9 +99,20 @@ async def login_page(request: Request, error: str = None):
     )
 
 
+@app.get("/register")
+async def register_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "register.html",
+        {"request": request}
+    )
+
+
 @app.post("/login")
-async def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    if not verify_credentials(username, password):
+async def login(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    # Authenticate user against database
+    user = authenticate_user(db, username, password)
+    if not user:
         return templates.TemplateResponse(
             request,
             "login.html",
@@ -125,8 +137,9 @@ async def logout():
 
 
 @app.get("/token")
-async def get_token(username: str, password: str):
-    if not verify_credentials(username, password):
+async def get_token(username: str, password: str, db: Session = Depends(get_db)):
+    user = authenticate_user(db, username, password)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"

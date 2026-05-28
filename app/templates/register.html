@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Chat AI - Registrazione{% endblock %}
+
+{% block styles %}
+<style>
+    .register-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    input:invalid {
+        border-color: #d32f2f;
+    }
+
+    .help-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .error {
+        color: #d32f2f;
+        background: #ffebee;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #d32f2f;
+    }
+
+    .success {
+        color: #388e3c;
+        background: #e8f5e9;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #388e3c;
+    }
+
+    .info {
+        color: #1976d2;
+        background: #e3f2fd;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        border-left: 4px solid #1976d2;
+    }
+
+    .divider {
+        text-align: center;
+        margin: 20px 0;
+        color: #999;
+    }
+
+    .login-link {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
+
+    .login-link:hover {
+        color: #764ba2;
+    }
+
+    .password-strength {
+        margin-top: 8px;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s, background-color 0.3s;
+        background-color: #d32f2f;
+    }
+
+    .password-strength-bar.weak {
+        width: 33%;
+        background-color: #f57c00;
+    }
+
+    .password-strength-bar.medium {
+        width: 66%;
+        background-color: #fbc02d;
+    }
+
+    .password-strength-bar.strong {
+        width: 100%;
+        background-color: #388e3c;
+    }
+
+    .password-requirements {
+        font-size: 12px;
+        color: #666;
+        margin-top: 8px;
+        line-height: 1.6;
+    }
+
+    .requirement {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .requirement.met {
+        color: #388e3c;
+    }
+
+    .requirement.unmet {
+        color: #d32f2f;
+    }
+
+    .requirement-icon {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <h1>📝 Crea un Account</h1>
+    <p class="subtitle">Registrati per un accesso permanente e limiti di richiesta più alti</p>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if success %}
+    <div class="success">{{ success }}</div>
+    {% endif %}
+
+    <form id="registerForm">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Scegli un username univoco"
+                minlength="3"
+                maxlength="50"
+                required
+                autofocus
+            />
+            <div class="help-text">Tra 3 e 50 caratteri, lettere, numeri e underscore</div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="la-tua@email.com"
+                required
+            />
+            <div class="help-text">Ti servira' per il login e le notifiche</div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Almeno 8 caratteri"
+                minlength="8"
+                required
+            />
+            <div class="password-strength">
+                <div class="password-strength-bar"></div>
+            </div>
+            <div class="password-requirements">
+                <div class="requirement unmet" id="req-length"><span class="requirement-icon">✓</span> Almeno 8 caratteri</div>
+                <div class="requirement unmet" id="req-lowercase"><span class="requirement-icon">✓</span> Una lettera minuscola</div>
+                <div class="requirement unmet" id="req-uppercase"><span class="requirement-icon">✓</span> Una lettera maiuscola</div>
+                <div class="requirement unmet" id="req-number"><span class="requirement-icon">✓</span> Un numero</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password_confirm">Conferma Password:</label>
+            <input
+                type="password"
+                id="password_confirm"
+                name="password_confirm"
+                placeholder="Ripeti la password"
+                required
+            />
+        </div>
+
+        <div class="form-group">
+            <label for="full_name">Nome Completo (Opzionale):</label>
+            <input
+                type="text"
+                id="full_name"
+                name="full_name"
+                placeholder="Il tuo nome completo"
+                maxlength="100"
+            />
+        </div>
+
+        <button type="submit" id="submitBtn">Registrati 🚀</button>
+    </form>
+
+    <div class="divider">oppure</div>
+
+    <a href="/login" class="login-link">Hai gia' un account? Accedi →</a>
+</div>
+
+<script>
+    const form = document.getElementById('registerForm');
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmInput = document.getElementById('password_confirm');
+    const submitBtn = document.getElementById('submitBtn');
+    const strengthBar = document.querySelector('.password-strength-bar');
+
+    // Password strength requirements
+    const requirements = {
+        length: document.getElementById('req-length'),
+        lowercase: document.getElementById('req-lowercase'),
+        uppercase: document.getElementById('req-uppercase'),
+        number: document.getElementById('req-number')
+    };
+
+    function checkPasswordRequirements(password) {
+        const checks = {
+            length: password.length >= 8,
+            lowercase: /[a-z]/.test(password),
+            uppercase: /[A-Z]/.test(password),
+            number: /\d/.test(password)
+        };
+
+        let strength = 0;
+        Object.values(checks).forEach(check => {
+            if (check) strength++;
+        });
+
+        // Update requirement indicators
+        Object.keys(checks).forEach(key => {
+            const req = requirements[key];
+            if (checks[key]) {
+                req.classList.remove('unmet');
+                req.classList.add('met');
+            } else {
+                req.classList.remove('met');
+                req.classList.add('unmet');
+            }
+        });
+
+        // Update strength bar
+        strengthBar.classList.remove('weak', 'medium', 'strong');
+        if (strength === 4) {
+            strengthBar.classList.add('strong');
+        } else if (strength >= 2) {
+            strengthBar.classList.add('medium');
+        } else {
+            strengthBar.classList.add('weak');
+        }
+
+        return checks;
+    }
+
+    passwordInput.addEventListener('input', function() {
+        checkPasswordRequirements(this.value);
+    });
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('password_confirm').value;
+        const fullName = document.getElementById('full_name').value || null;
+
+        // Validate password match
+        if (password !== passwordConfirm) {
+            alert('Le password non corrispondono!');
+            return;
+        }
+
+        // Validate password requirements
+        const checks = checkPasswordRequirements(password);
+        if (!checks.length || !checks.lowercase || !checks.uppercase || !checks.number) {
+            alert('La password non soddisfa i requisiti di sicurezza!');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registrazione in corso...';
+
+        try {
+            const response = await fetch('/api/users/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    full_name: fullName
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(`Errore: ${data.detail}`);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Registrati 🚀';
+                return;
+            }
+
+            // Success - redirect to login
+            alert(`Registrazione completata! Ora puoi effettuare il login.`);
+            window.location.href = '/login';
+
+        } catch (error) {
+            alert(`Errore di rete: ${error.message}`);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Registrati 🚀';
+        }
+    });
+</script>
+{% endblock %}

@@ -109,10 +109,6 @@
     <div class="error">{{ error }}</div>
     {% endif %}
 
-    <div class="info">
-        💡 Prova: username=<strong>admin</strong>, password=<strong>secret123</strong>
-    </div>
-
     <form method="post" action="/login" id="loginForm">
         <div class="form-group">
             <label for="username">Username:</label>
@@ -139,6 +135,10 @@
 
         <button type="submit">Accedi 🚀</button>
     </form>
+
+    <div class="divider">oppure</div>
+
+    <a href="/register" class="continue-link">Non hai un account? Registrati →</a>
 
     <div class="divider">oppure</div>
 
