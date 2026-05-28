@@ -26,15 +26,16 @@ ai_platform = Gemini(api_key=settings.gemini_api_key, system_prompt=system_promp
 
 
 # --- Web Endpoints (HTML) ---
-@app.get("/", response_class=str)
+@app.get("/")
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html", {"request": request})
 
 
-@app.post("/", response_class=str)
+@app.post("/")
 async def chat_form(request: Request, prompt: str = Form(...)):
     response_text = ai_platform.chat(prompt)
     return templates.TemplateResponse(
+        request,
         "chat.html",
         {"request": request, "prompt": prompt, "response": response_text}
     )
