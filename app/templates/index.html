@@ -4,6 +4,64 @@
 
 {% block styles %}
 <style>
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .user-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .user-badge.authenticated {
+        background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+    }
+
+    .logout-btn {
+        padding: 6px 12px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+        background: #d32f2f;
+    }
+
+    .login-btn {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.2s;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-2px);
+    }
+
     .form-group {
         margin-bottom: 20px;
     }
@@ -75,14 +133,41 @@
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
+
+    .rate-limit-info {
+        font-size: 12px;
+        color: #666;
+        margin-top: 10px;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 6px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<h1>💬 Chat AI</h1>
+<div class="header">
+    <h1>💬 Chat AI</h1>
+    <div class="user-info">
+        {% if user_id == "global_unauthenticated_user" %}
+        <span class="user-badge">Ospite</span>
+        <a href="/login" class="login-btn">Accedi 🔐</a>
+        {% else %}
+        <span class="user-badge authenticated">{{ user_id }} ✓</span>
+        <form method="post" action="/logout" style="display: inline;">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
 <p class="subtitle">Fai una domanda e riceverai una risposta istantanea</p>
 
 <form method="post" action="/" id="chatForm">
+    {% if token %}
+    <input type="hidden" name="token" value="{{ token }}" />
+    {% endif %}
+
     <div class="form-group">
         <label for="prompt">La tua domanda:</label>
         <textarea
@@ -99,6 +184,22 @@
         <div class="spinner"></div>
         <p>Elaborando la tua domanda...</p>
     </div>
+
+    {% if user_id == "global_unauthenticated_user" %}
+    <div class="rate-limit-info">
+        📊 Limite per ospiti: {{ rate_limit }}/{{ max_rate_limit }} richieste
+        {% if remaining_requests %}
+        ({{ remaining_requests }} rimanenti)
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="rate-limit-info">
+        📊 Limite autenticato: {{ rate_limit }}/{{ max_rate_limit }} richieste
+        {% if remaining_requests %}
+        ({{ remaining_requests }} rimanenti)
+        {% endif %}
+    </div>
+    {% endif %}
 </form>
 
 <script>

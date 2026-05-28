@@ -4,6 +4,47 @@
 
 {% block styles %}
 <style>
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .user-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .user-badge.authenticated {
+        background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+    }
+
+    .logout-btn {
+        padding: 6px 12px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+        background: #d32f2f;
+    }
+
     .chat-container {
         display: flex;
         flex-direction: column;
@@ -85,12 +126,25 @@
 {% endblock %}
 
 {% block content %}
-<h1>💬 Chat AI</h1>
+<div class="header">
+    <h1>💬 Chat AI</h1>
+    <div class="user-info">
+        {% if user_id == "global_unauthenticated_user" %}
+        <span class="user-badge">Ospite</span>
+        {% else %}
+        <span class="user-badge authenticated">{{ user_id }} ✓</span>
+        <form method="post" action="/logout" style="display: inline;">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
 <p class="subtitle">La tua conversazione</p>
 
 <div class="chat-container">
     <div class="message user-message">
-        <div class="user-label">👤 Tu</div>
+        <div class="user-label">👤 {{ user_id }}</div>
         {{ prompt }}
     </div>
 
